@@ -9,6 +9,11 @@ source('descent.R')
 options(shiny.maxRequestSize = 9 * 1024 ^ 2)
 
 function(input, output, session) {
+
+  observe({
+    if (input$quit > 0) stopApp()  # stop shiny
+  })
+
   genealogyInput <- reactive({
     # input$file1 will be NULL initially. After the user selects
     # and uploads a file, it will be a data frame with 'name',

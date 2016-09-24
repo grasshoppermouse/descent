@@ -66,7 +66,6 @@ error_df <-
                `Male mother` |
                `One missing parent`)
 
-
     return(df)
 
   }
