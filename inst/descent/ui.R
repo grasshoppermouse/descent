@@ -1,6 +1,4 @@
 
-
-
 library(shiny)
 
 shinyUI(navbarPage(
@@ -20,8 +18,9 @@ shinyUI(navbarPage(
                    '.tsv'
                  )
                ),
-               tags$hr(),
-               # checkboxInput('header', 'Header', TRUE),
+
+               checkboxInput('header', 'Header', TRUE),
+
                radioButtons('sep', 'Separator',
                             c(
                               Comma = ',',
@@ -39,15 +38,17 @@ shinyUI(navbarPage(
                  ),
                  '"'
                ),
+
                htmlOutput("egoSelectUI"),
                htmlOutput("motherSelectUI"),
                htmlOutput("fatherSelectUI"),
                htmlOutput("sexSelectUI"),
                htmlOutput("livingdeadSelectUI"),
 
-               textInput("femalevalue", "Female value", "F"),
-               textInput("malevalue", "Male value", "M"),
-               textInput("missingvalue", "Missing value", "999")
+               htmlOutput("femaleInputUI"),
+               htmlOutput("maleInputUI"),
+               htmlOutput("missingInputUI")
+               # textInput("missingvalue", "Missing value", "999")
 
              ),
              mainPanel(DT::dataTableOutput('contents'))
@@ -78,14 +79,13 @@ shinyUI(navbarPage(
                 downloadButton('downloadData', 'Download'))
     )
   ),
+  tabPanel(
+    "Groups",
+    sidebarPanel(
+      htmlOutput("groupSelectUI"),
+      actionButton('groupStats', 'Group relatedness')
+    ),
+    mainPanel(DT::dataTableOutput('groupStats'))
+  )
 
-  # sidebarPanel(
-  #
-  #   actionButton('computePhi', 'Compute relatedness')
-  # ),
-  # mainPanel(
-  #   DT::dataTableOutput('phi')
-  # )
-  # ),
-  tabPanel("Lineages")
 ))
