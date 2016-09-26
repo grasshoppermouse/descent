@@ -9,9 +9,9 @@ source('descent.R')
 options(shiny.maxRequestSize = 9 * 1024 ^ 2)
 
 function(input, output, session) {
-
   observe({
-    if (input$quit > 0) stopApp()  # stop shiny
+    if (input$quit > 0)
+      stopApp()  # stop shiny
   })
 
   genealogyInput <- reactive({
@@ -112,10 +112,14 @@ function(input, output, session) {
     df <- genealogyInput()
     egos <- df[[input$egoVar]]
     fathers <- df[[input$fatherVar]]
-    if (is.null(fathers)) v <- ''
-    else if (0 %in% fathers & !(0 %in% egos)) v = 0
-    else if (!max(fathers) %in% egos) v = max(fathers)
-    else v <- ''
+    if (is.null(fathers))
+      v <- ''
+    else if (0 %in% fathers & !(0 %in% egos))
+      v = 0
+    else if (!max(fathers) %in% egos)
+      v = max(fathers)
+    else
+      v <- ''
     textInput("missingvalue", "Missing value", v)
   })
 
@@ -123,18 +127,42 @@ function(input, output, session) {
     error_df(
       genealogyInput(),
       input$egoVar,
-      input$motherVar,
       input$fatherVar,
+      input$motherVar,
       input$sexVar,
-      input$femalevalue,
       input$malevalue,
+      input$femalevalue,
       input$missingvalue
     )
   })
 
+  warnings <- eventReactive(input$checkErrors, {
+    warning_df(
+      genealogyInput(),
+      input$egoVar,
+      input$fatherVar,
+      input$motherVar,
+      input$sexVar,
+      input$malevalue,
+      input$femalevalue,
+      input$missingvalue
+    )
+  })
+
+  output$error_msg <- renderText(if (is.null(errors())) 'No errors' else 'Rows with errors')
+
   output$errors <- DT::renderDataTable(errors(),
+                          options = list(
+                            # scrollY = '75vh',
+                            scrollX = TRUE,
+                            paging = FALSE
+                          ))
+
+  output$warning_msg <- renderText(if (is.null(warnings())) 'No warnings' else 'Rows with warnings')
+
+  output$warnings <- DT::renderDataTable(warnings(),
                                        options = list(
-                                         scrollY = '75vh',
+                                         # scrollY = '75vh',
                                          scrollX = TRUE,
                                          paging = FALSE
                                        ))
@@ -209,10 +237,13 @@ function(input, output, session) {
     )
   })
 
-  output$groupStats <- DT::renderDataTable(grouprelatedness(),
-                                           options = list(
-                                             scrollY = '75vh',
-                                             scrollX = TRUE,
-                                             paging = FALSE
-                                           ))
+  output$groupStats <- DT::renderDataTable(
+    grouprelatedness(),
+    options = list(
+      scrollY = '75vh',
+      scrollX = TRUE,
+      paging = FALSE
+    ),
+    rownames = FALSE
+  )
 }

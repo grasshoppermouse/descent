@@ -1,4 +1,6 @@
 
+
+
 library(kinship2)
 library(GENLIB)
 library(dplyr)
@@ -21,7 +23,7 @@ duplicated_egos <- function(df, ego) {
 }
 
 parent_wrong_sex <-
-  function(df, ego, mother, father, sex, female, male) {
+  function(df, ego, father, mother, sex, male, female) {
     ego_fathers <- intersect(df[[father]], df[[ego]])
     df$`Female father` <-
       (df[[sex]] == female) & (df[[ego]] %in% ego_fathers)
@@ -34,7 +36,7 @@ parent_wrong_sex <-
 
   }
 
-missing_parent <- function(df, mother, father, missing) {
+missing_parent <- function(df, father, mother, missing) {
   df$`One missing parent` <-
     xor(df[[mother]] == missing, df[[father]] == missing)
 
@@ -42,31 +44,118 @@ missing_parent <- function(df, mother, father, missing) {
 
 }
 
+incest <- function(df, ego, father, mother, sex, male, female, missing) {
+  # to test pairs for equality, sort rows by id then convert to list
+
+  df$`Mother-son incest` <- FALSE
+
+  sons <- df[sex] == male
+  sons_mothers <- split(cbind(df[[ego]][sons], df[[mother]][sons]), seq_len(sum(sons)))
+  fathers_mothers <- split(cbind(df[[father]], df[[mother]]), seq_len(nrow(df)))
+  mother_son_incest <- intersect(sons_mothers, fathers_mothers)
+
+  if (length(mother_son_incest) != 0){
+  df$`Mother-son incest` <- sapply(mother_son_incest,
+                                         function(x) df[[mother]] == x[2] &
+                                           (df[[ego]] == x[1] | df[[father]] == x[1]))
+  }
+
+  df$`Father-daughter incest` <- FALSE
+  daughters <- df[sex] == female
+  daughters_fathers <- split(cbind(df[[ego]][daughters], df[[father]][daughters]), seq_len(sum(daughters)))
+  # fathers_mothers <- split(cbind(df[[father]], df[[mother]]), seq_len(nrow(df)))
+  father_daughter_incest <- intersect(daughters_fathers, fathers_mothers)
+
+  if (length(father_daughter_incest) != 0){
+  df$`Father-daughter incest` <- sapply(father_daughter_incest,
+                                   function(x) df[[father]] == x[2] &
+                                     (df[[ego]] == x[1] | df[[mother]] == x[1]))
+  }
+
+    return(df)
+
+}
+
 error_df <-
   function(df,
            ego,
-           mother,
            father,
+           mother,
            sex,
-           female,
            male,
+           female,
            missing) {
     df <- missing_egos(df, ego, missing)
     df <- duplicated_egos(df, ego)
     df <-
-      parent_wrong_sex(df, ego, mother, father, sex, female, male)
-
-    df <- missing_parent(df, mother, father, missing)
+      parent_wrong_sex(df, ego, father, mother, sex, male, female)
+    df <- missing_parent(df, father, mother, missing)
+    df <- incest(df, ego, father, mother, sex, male, female, missing)
 
     df <-
       df %>%
-      filter(`Missing egos` |
-               `Duplicate egos` |
-               `Female father` |
-               `Male mother` |
-               `One missing parent`)
+      filter(
+        `Missing egos` |
+          `Duplicate egos` |
+          `Female father` |
+          `Male mother` |
+          `One missing parent` |
+          `Mother-son incest` |
+          `Father-daughter incest`
+      )
 
-    return(df)
+    if (nrow(df) == 0)
+      return(NULL)
+
+    error_cols <- c(
+      'Missing egos',
+      'Duplicate egos',
+      'Female father',
+      'Male mother',
+      'One missing parent',
+      'Mother-son incest',
+      'Father-daughter incest'
+    )
+
+    other_cols <- setdiff(names(df), error_cols)
+    keep_cols <-
+      c(other_cols, error_cols[which(colSums(df[error_cols]) > 0)])
+
+    return(df[keep_cols])
+
+  }
+
+warning_df <-
+  function(df,
+           ego,
+           father,
+           mother,
+           sex,
+           male,
+           female,
+           missing) {
+    df <- incest(df, ego, father, mother, sex, male, female, missing)
+
+    df <-
+      df %>%
+      filter(
+          `Mother-son incest` |
+          `Father-daughter incest`
+      )
+
+    if (nrow(df) == 0)
+      return(NULL)
+
+    warning_cols <- c(
+      'Mother-son incest',
+      'Father-daughter incest'
+    )
+
+    other_cols <- setdiff(names(df), warning_cols)
+    keep_cols <-
+      c(other_cols, warning_cols[which(colSums(df[warning_cols]) > 0)])
+
+    return(df[keep_cols])
 
   }
 
@@ -220,7 +309,6 @@ mean_group_relatedness <-
            female,
            missing,
            group) {
-
     ped <- as.pedigree.K2(df,
                           ego,
                           father,
@@ -232,16 +320,19 @@ mean_group_relatedness <-
 
     kinmat <- kinship(ped) * 2
 
-    submatrix_mean <- function(g){
+    submatrix_mean <- function(g) {
       egos <- df[[ego]][df[[group]] == g] # egos in group g
-      if (length(egos) == 1) return(1)
-      m <- kinmat[as.character(egos), as.character(egos)] # submatrix for egos in group g
+      if (length(egos) == 1)
+        return(1)
+      m <-
+        kinmat[as.character(egos), as.character(egos)] # submatrix for egos in group g
       mean(m[upper.tri(m)])
     }
 
     unique_groups <- table(df[[group]])
 
-    group_means <- sapply(names(unique_groups), FUN = submatrix_mean)
+    group_means <-
+      sapply(names(unique_groups), FUN = submatrix_mean)
 
     df_group <- data_frame(
       `Group id` = names(unique_groups),
