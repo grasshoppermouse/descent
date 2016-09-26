@@ -45,13 +45,14 @@ missing_parent <- function(df, father, mother, missing) {
 }
 
 incest <- function(df, ego, father, mother, sex, male, female, missing) {
-  # to test pairs for equality, sort rows by id then convert to list
+
+  fm <- df[,c(father, mother)][df[[father]] != missing & df[[mother]] != missing, ]
+  fathers_mothers <- unique(split(fm, seq_len(nrow(fm))))
 
   df$`Mother-son incest` <- FALSE
 
   sons <- df[sex] == male
   sons_mothers <- split(cbind(df[[ego]][sons], df[[mother]][sons]), seq_len(sum(sons)))
-  fathers_mothers <- split(cbind(df[[father]], df[[mother]]), seq_len(nrow(df)))
   mother_son_incest <- intersect(sons_mothers, fathers_mothers)
 
   if (length(mother_son_incest) != 0){
@@ -61,9 +62,9 @@ incest <- function(df, ego, father, mother, sex, male, female, missing) {
   }
 
   df$`Father-daughter incest` <- FALSE
+
   daughters <- df[sex] == female
   daughters_fathers <- split(cbind(df[[ego]][daughters], df[[father]][daughters]), seq_len(sum(daughters)))
-  # fathers_mothers <- split(cbind(df[[father]], df[[mother]]), seq_len(nrow(df)))
   father_daughter_incest <- intersect(daughters_fathers, fathers_mothers)
 
   if (length(father_daughter_incest) != 0){
@@ -72,7 +73,11 @@ incest <- function(df, ego, father, mother, sex, male, female, missing) {
                                      (df[[ego]] == x[1] | df[[mother]] == x[1]))
   }
 
-    return(df)
+  df$`Sibling incest` <- FALSE
+
+
+
+  return(df)
 
 }
 
@@ -90,7 +95,6 @@ error_df <-
     df <-
       parent_wrong_sex(df, ego, father, mother, sex, male, female)
     df <- missing_parent(df, father, mother, missing)
-    df <- incest(df, ego, father, mother, sex, male, female, missing)
 
     df <-
       df %>%
@@ -99,9 +103,7 @@ error_df <-
           `Duplicate egos` |
           `Female father` |
           `Male mother` |
-          `One missing parent` |
-          `Mother-son incest` |
-          `Father-daughter incest`
+          `One missing parent`
       )
 
     if (nrow(df) == 0)
@@ -112,9 +114,7 @@ error_df <-
       'Duplicate egos',
       'Female father',
       'Male mother',
-      'One missing parent',
-      'Mother-son incest',
-      'Father-daughter incest'
+      'One missing parent'
     )
 
     other_cols <- setdiff(names(df), error_cols)
@@ -135,12 +135,10 @@ warning_df <-
            female,
            missing) {
     df <- incest(df, ego, father, mother, sex, male, female, missing)
-
     df <-
       df %>%
-      filter(
-          `Mother-son incest` |
-          `Father-daughter incest`
+      dplyr::filter(
+          (`Mother-son incest` | `Father-daughter incest`)
       )
 
     if (nrow(df) == 0)
