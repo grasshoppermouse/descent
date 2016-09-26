@@ -28,16 +28,17 @@ shinyUI(navbarPage(
                               Tab = '\t'
                             ),
                             ','),
-               radioButtons(
-                 'quote',
-                 'Quote',
-                 c(
-                   None = '',
-                   'Double Quote' = '"',
-                   'Single Quote' = "'"
-                 ),
-                 '"'
-               ),
+
+               # radioButtons(
+               #   'quote',
+               #   'Quote',
+               #   c(
+               #     None = '',
+               #     'Double Quote' = '"',
+               #     'Single Quote' = "'"
+               #   ),
+               #   '"'
+               # ),
 
                htmlOutput("egoSelectUI"),
                htmlOutput("motherSelectUI"),

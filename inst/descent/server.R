@@ -30,7 +30,7 @@ function(input, output, session) {
     read_delim(
       inFile$datapath,
       delim = input$sep,
-      quote = input$quote,
+      quote = '', #input$quote,
       col_names = input$header
     )
 

@@ -1,9 +1,4 @@
 
-
-
-
-
-
 library(kinship2)
 library(GENLIB)
 library(dplyr)
