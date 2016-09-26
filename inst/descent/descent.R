@@ -46,8 +46,8 @@ missing_parent <- function(df, father, mother, missing) {
 
 incest <- function(df, ego, father, mother, sex, male, female, missing) {
 
-  fm <- df[,c(father, mother)][df[[father]] != missing & df[[mother]] != missing, ]
-  fathers_mothers <- unique(split(fm, seq_len(nrow(fm))))
+  fm <- cbind(df[[father]], df[[mother]])[df[[father]] != missing & df[[mother]] != missing, ]
+  fathers_mothers <- unique(t(split(fm, seq_len(nrow(fm)))))
 
   df$`Mother-son incest` <- FALSE
 
@@ -64,18 +64,16 @@ incest <- function(df, ego, father, mother, sex, male, female, missing) {
   df$`Father-daughter incest` <- FALSE
 
   daughters <- df[sex] == female
-  daughters_fathers <- split(cbind(df[[ego]][daughters], df[[father]][daughters]), seq_len(sum(daughters)))
-  father_daughter_incest <- intersect(daughters_fathers, fathers_mothers)
+  fathers_daughters <- split(cbind(df[[father]][daughters], df[[ego]][daughters]), seq_len(sum(daughters)))
+  father_daughter_incest <- intersect(fathers_daughters, fathers_mothers)
 
   if (length(father_daughter_incest) != 0){
   df$`Father-daughter incest` <- sapply(father_daughter_incest,
-                                   function(x) df[[father]] == x[2] &
-                                     (df[[ego]] == x[1] | df[[mother]] == x[1]))
+                                   function(x) df[[father]] == x[1] &
+                                     (df[[ego]] == x[2] | df[[mother]] == x[2]))
   }
 
   df$`Sibling incest` <- FALSE
-
-
 
   return(df)
 
