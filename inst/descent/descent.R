@@ -131,6 +131,7 @@ error_df <-
            male,
            female,
            missing) {
+
     df <- missing_egos(df, ego, missing)
     df <- duplicated_egos(df, ego)
     df <-

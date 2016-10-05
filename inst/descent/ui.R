@@ -3,6 +3,7 @@ library(shiny)
 
 shinyUI(navbarPage(
   title = div(img(src = "descentlogo.gif")),
+  windowTitle = 'Descent',
   tabPanel("File",
            sidebarLayout(
              sidebarPanel(
@@ -97,7 +98,7 @@ shinyUI(navbarPage(
       id = 'quit',
       type = "button",
       class = "btn action-button",
-      style="color: #fff; background-color: #337ab7; border-color: #2e6da4; padding:2px",
+      style = "color: #fff; background-color: #337ab7; border-color: #2e6da4; padding:2px",
       onclick = "setTimeout(function(){window.close();},500);",  # close browser
       "Quit"
     )
