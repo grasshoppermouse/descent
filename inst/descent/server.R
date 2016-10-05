@@ -1,4 +1,5 @@
 library(shiny)
+library(ggplot2)
 library(DT)
 library(GENLIB)
 
@@ -204,6 +205,17 @@ function(input, output, session) {
                                       scrollX = TRUE,
                                       paging = FALSE
                                     ))
+
+  output$phiHist <- renderPlot({
+    mtrx <- phi()
+    mtrx <- mtrx[upper.tri(mtrx)]
+    # hist(mtrx, main = 'Histogram of relatedness values', xlab = 'Relatedness')
+    ggplot(data.frame(r = mtrx), aes(r)) +
+      geom_histogram() +
+      scale_x_sqrt() +
+      scale_y_sqrt() +
+      labs(title = 'Histogram of relatedness values (axes on root-root scale)', x = 'Relatedness')
+  })
 
   output$downloadData <- downloadHandler(
     # This function returns a string which tells the client

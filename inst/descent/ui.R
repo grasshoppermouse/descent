@@ -80,9 +80,10 @@ navbarPage(
   tabPanel(
     "Relatedness",
     verticalLayout(
-      DT::dataTableOutput('phi'),
+      # DT::dataTableOutput('phi'),
       wellPanel(actionButton('computePhi', 'Compute relatedness'),
-                downloadButton('downloadData', 'Download'))
+                downloadButton('downloadData', 'Download matrix')),
+      plotOutput('phiHist')
     )
   ),
   tabPanel(
