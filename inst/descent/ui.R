@@ -1,7 +1,7 @@
 
 library(shiny)
 
-shinyUI(navbarPage(
+navbarPage(
   title = div(img(src = "descentlogo.gif")),
   windowTitle = 'Descent',
   tabPanel("File",
@@ -104,4 +104,4 @@ shinyUI(navbarPage(
     )
   )
 
-))
+)
