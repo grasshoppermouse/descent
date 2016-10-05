@@ -1,5 +1,6 @@
 library(shiny)
 library(ggplot2)
+library(ggrepel)
 library(DT)
 library(GENLIB)
 
@@ -217,20 +218,12 @@ function(input, output, session) {
       labs(title = 'Histogram of relatedness values (axes on root-root scale)', x = 'Relatedness')
   })
 
-  output$downloadData <- downloadHandler(
-    # This function returns a string which tells the client
-    # browser what name to use when saving the file.
+  output$downloadRelatednessMatrix <- downloadHandler(
     filename = function() {
-      'relatedness.csv' # paste(input$dataset, input$filetype, sep = ".")
+      'relatedness.csv'
     },
-
-    # This function should write data to a file given to it by
-    # the argument 'file'.
     content = function(file) {
-      sep <- ',' # switch(input$filetype, "csv" = ",", "tsv" = "\t")
-
-      # Write to a file specified by the 'file' argument
-      write.table(phi(), file, sep = sep,
+      write.table(phi(), file, sep = ',',
                   row.names = FALSE)
     }
   )
@@ -249,7 +242,7 @@ function(input, output, session) {
     )
   })
 
-  output$groupStats <- DT::renderDataTable(
+  output$groupStatsTable <- DT::renderDataTable(
     grouprelatedness(),
     options = list(
       scrollY = '75vh',
@@ -257,5 +250,22 @@ function(input, output, session) {
       paging = FALSE
     ),
     rownames = FALSE
+  )
+
+  output$groupStatsPlot <- renderPlot({
+    df <- grouprelatedness()
+    ggplot(df, aes(`Group size`, `Mean relatedness`)) +
+      geom_point() +
+      geom_text_repel(aes(label = `Group id`))
+  })
+
+  output$downloadGroupData <- downloadHandler(
+    filename = function() {
+      'group_relatedness.csv'
+    },
+    content = function(file) {
+      write.table(grouprelatedness(), file, sep = ',',
+                  row.names = FALSE)
+    }
   )
 }

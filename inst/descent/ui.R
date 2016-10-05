@@ -82,7 +82,7 @@ navbarPage(
     verticalLayout(
       # DT::dataTableOutput('phi'),
       wellPanel(actionButton('computePhi', 'Compute relatedness'),
-                downloadButton('downloadData', 'Download matrix')),
+                downloadButton('downloadRelatednessMatrix', 'Download matrix')),
       plotOutput('phiHist')
     )
   ),
@@ -90,9 +90,12 @@ navbarPage(
     "Groups",
     sidebarPanel(
       htmlOutput("groupSelectUI"),
-      actionButton('groupStats', 'Group relatedness')
-    ),
-    mainPanel(DT::dataTableOutput('groupStats'))
+      actionButton('groupStats', 'Group relatedness'),
+      downloadButton('downloadGroupData', 'Download csv')),
+    mainPanel(
+      # DT::dataTableOutput('groupStatsTable')
+      plotOutput('groupStatsPlot')
+      )
   ),
   tabPanel(
     tags$button(
@@ -104,5 +107,4 @@ navbarPage(
       "Quit"
     )
   )
-
 )
