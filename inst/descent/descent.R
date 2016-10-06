@@ -32,6 +32,13 @@ ego_equals_parent <- function(df, ego, father, mother){
   return(df)
 }
 
+father_equals_mother <- function(df, father, mother, missing){
+  both <- intersect(df[[father]], df[[mother]])
+  both <- setdiff(both, missing)
+  df$`Father equals mother` <- df[[father]] %in% both | df[[mother]] %in% both
+  return(df)
+}
+
 parent_wrong_sex <-
   function(df, ego, father, mother, sex, male, female) {
     ego_fathers <- intersect(df[[father]], df[[ego]])
@@ -66,6 +73,7 @@ error_df <-
     df <- missing_egos(df, ego, missing)
     df <- duplicated_egos(df, ego)
     df <- ego_equals_parent(df, ego, father, mother)
+    df <- father_equals_mother(df, father, mother, missing)
     df <-
       parent_wrong_sex(df, ego, father, mother, sex, male, female)
     df <- missing_parent(df, father, mother, missing)
@@ -77,6 +85,7 @@ error_df <-
         `Missing egos` |
         `Duplicate egos` |
         `Ego equals parent` |
+        `Father equals mother` |
         `Female father` |
         `Male mother` |
         `One missing parent`)
@@ -90,6 +99,7 @@ error_df <-
       'Missing egos',
       'Duplicate egos',
       'Ego equals parent',
+      'Father equals mother',
       'Female father',
       'Male mother',
       'One missing parent'
