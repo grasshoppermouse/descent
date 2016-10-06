@@ -98,6 +98,11 @@ navbarPage(
       )
   ),
   tabPanel(
+    "Help",
+    # includeHTML("help/index.html")
+    includeMarkdown("www/help.md")
+  ),
+  tabPanel(
     tags$button(
       id = 'quit',
       type = "button",

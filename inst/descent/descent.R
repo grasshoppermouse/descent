@@ -3,6 +3,13 @@ library(kinship2)
 library(GENLIB)
 library(dplyr)
 
+# Error checks
+
+check_sex_codes <- function(df, sex, male, female, missing){
+  df$`Extraneous sex codes` <- ! (df[[sex]] %in% c(male, female, missing))
+  return(df)
+}
+
 missing_egos <- function(df, ego, missing) {
   if (is.na(missing) | sum(is.na(df[[ego]])) > 0) {
     df$`Missing egos` <- is.na(df[[ego]])
@@ -16,8 +23,13 @@ missing_egos <- function(df, ego, missing) {
 duplicated_egos <- function(df, ego) {
   df$`Duplicate egos` <-
     duplicated(df[ego]) | duplicated(df[ego], fromLast = T)
-  return(df)
 
+  return(df)
+}
+
+ego_equals_parent <- function(df, ego, father, mother){
+  df$`Ego equals parent` <- df[[ego]] == df[[father]] | df[[ego]] == df[[mother]]
+  return(df)
 }
 
 parent_wrong_sex <-
@@ -31,7 +43,6 @@ parent_wrong_sex <-
       (df[[sex]] == male) & (df[[ego]] %in% ego_mothers)
 
     return(df)
-
   }
 
 missing_parent <- function(df, father, mother, missing) {
@@ -39,8 +50,58 @@ missing_parent <- function(df, father, mother, missing) {
     xor(df[[mother]] == missing, df[[father]] == missing)
 
   return(df)
-
 }
+
+error_df <-
+  function(df,
+           ego,
+           father,
+           mother,
+           sex,
+           male,
+           female,
+           missing) {
+
+    df <- check_sex_codes(df, sex, male, female, missing)
+    df <- missing_egos(df, ego, missing)
+    df <- duplicated_egos(df, ego)
+    df <- ego_equals_parent(df, ego, father, mother)
+    df <-
+      parent_wrong_sex(df, ego, father, mother, sex, male, female)
+    df <- missing_parent(df, father, mother, missing)
+
+    df <-
+      df %>%
+      filter(
+        `Extraneous sex codes` |
+        `Missing egos` |
+        `Duplicate egos` |
+        `Ego equals parent` |
+        `Female father` |
+        `Male mother` |
+        `One missing parent`)
+
+    if (nrow(df) == 0)
+      return(NULL)
+
+    error_cols <- c(
+      'Extraneous sex codes',
+      'Missing egos',
+      'Duplicate egos',
+      'Ego equals parent',
+      'Female father',
+      'Male mother',
+      'One missing parent'
+      )
+
+    other_cols <- setdiff(names(df), error_cols)
+    keep_cols <-
+      c(other_cols, error_cols[which(colSums(df[error_cols]) > 0)])
+
+    return(df[keep_cols])
+  }
+
+# Warning checks
 
 incest <-
   function(df,
@@ -114,53 +175,10 @@ incest <-
         return(TRUE)
 
       return(FALSE)
-
     }
 
     df$`Sibling incest` <- apply(cbind(df[[father]], df[[mother]]), 1, same_mom_or_dad)
     return(df)
-
-  }
-
-error_df <-
-  function(df,
-           ego,
-           father,
-           mother,
-           sex,
-           male,
-           female,
-           missing) {
-
-    df <- missing_egos(df, ego, missing)
-    df <- duplicated_egos(df, ego)
-    df <-
-      parent_wrong_sex(df, ego, father, mother, sex, male, female)
-    df <- missing_parent(df, father, mother, missing)
-
-    df <-
-      df %>%
-      filter(`Missing egos` |
-               `Duplicate egos` |
-               `Female father` |
-               `Male mother` |
-               `One missing parent`)
-
-    if (nrow(df) == 0)
-      return(NULL)
-
-    error_cols <- c('Missing egos',
-                    'Duplicate egos',
-                    'Female father',
-                    'Male mother',
-                    'One missing parent')
-
-    other_cols <- setdiff(names(df), error_cols)
-    keep_cols <-
-      c(other_cols, error_cols[which(colSums(df[error_cols]) > 0)])
-
-    return(df[keep_cols])
-
   }
 
 warning_df <-
