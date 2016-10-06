@@ -57,25 +57,13 @@ navbarPage(
            )),
   tabPanel(
     "Errors",
-    sidebarPanel(
-      # checkboxGroupInput(
-      #   "errorCheckGroup",
-      #   label = "Check for errors",
-      #   choices = list(
-      #     "Incest" = 1,
-      #     "Choice 2" = 2,
-      #     "Choice 3" = 3
-      #   ),
-      #   selected = NULL
-      # ),
-
-      actionButton('checkErrors', 'Check errors')
-
-    ),
-    mainPanel(h3(textOutput('error_msg')),
-              DT::dataTableOutput('errors'),
-              h3(textOutput('warning_msg')),
-              DT::dataTableOutput('warnings'))
+    verticalLayout(
+      actionButton('checkErrors', 'Check errors'),
+      h3(textOutput('error_msg')),
+      DT::dataTableOutput('errors'),
+      h3(textOutput('warning_msg')),
+      DT::dataTableOutput('warnings')
+    )
   ),
   tabPanel(
     "Relatedness",
