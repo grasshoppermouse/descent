@@ -81,8 +81,9 @@ error_df <-
         `Male mother` |
         `One missing parent`)
 
-    if (nrow(df) == 0)
+    if (nrow(df) == 0){
       return(NULL)
+    }
 
     error_cols <- c(
       'Extraneous sex codes',
@@ -257,14 +258,16 @@ as.pedigree.K2 <-
            male,
            female,
            missing) {
+
     # takes a data frame and returns a kinship2 pedigree
     #
     # is sex is not in "male", "female", "m", "f", "1", "2", then
     # it is converted to "male", "female"
 
-    e_df <-
+    df_err <-
       error_df(df, ego, mother, father, sex, female, male, missing)
-    if (is.data.frame(e_df) && nrow(e_df) != 0) {
+
+    if (! is.null(df_err)) {
       return(NULL)
     }
 
@@ -362,6 +365,7 @@ mean_group_relatedness <-
            female,
            missing,
            group) {
+
     ped <- as.pedigree.K2(df,
                           ego,
                           father,
@@ -370,6 +374,8 @@ mean_group_relatedness <-
                           male,
                           female,
                           missing)
+
+    if (is.null(ped)) return(NULL)
 
     kinmat <- kinship(ped) * 2
 

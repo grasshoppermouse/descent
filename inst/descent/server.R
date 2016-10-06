@@ -170,6 +170,7 @@ function(input, output, session) {
                                        ))
 
 
+  # GENLIB phi doesn't return complete matrix for some reason
   # phi <- eventReactive(input$computePhi, {
   #   gen.phi(
   #     as.pedigree.GL(
@@ -186,18 +187,18 @@ function(input, output, session) {
   # })
 
   phi <- eventReactive(input$computePhi, {
-    kinship2::kinship(
-      as.pedigree.K2(
-        genealogyInput(),
-        input$egoVar,
-        input$fatherVar,
-        input$motherVar,
-        input$sexVar,
-        input$malevalue,
-        input$femalevalue,
-        input$missingvalue
-      )
-    ) * 2
+    ped <- as.pedigree.K2(
+      genealogyInput(),
+      input$egoVar,
+      input$fatherVar,
+      input$motherVar,
+      input$sexVar,
+      input$malevalue,
+      input$femalevalue,
+      input$missingvalue
+    )
+    if (is.null(ped)) return(NULL)
+    kinship2::kinship(ped) * 2
   })
 
   output$phi <- DT::renderDataTable(phi(),
@@ -254,6 +255,7 @@ function(input, output, session) {
 
   output$groupStatsPlot <- renderPlot({
     df <- grouprelatedness()
+    if (is.null(df)) return(NULL)
     ggplot(df, aes(`Group size`, `Mean relatedness`)) +
       geom_point() +
       geom_text_repel(aes(label = `Group id`))
