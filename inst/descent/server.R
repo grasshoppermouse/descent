@@ -80,16 +80,6 @@ function(input, output, session) {
     selectInput("sexVar", "Sex variable", nms, selected = s)
   })
 
-  output$livingdeadSelectUI <- renderUI({
-    selectInput("livingdeadVar",
-                "Living/dead variable",
-                c('All living', names(genealogyInput())))
-  })
-
-  output$groupSelectUI <- renderUI({
-    selectInput("groupVar", "Group variable", names(genealogyInput()))
-  })
-
   guess_value <- function(clmn, options) {
     df <- genealogyInput()
     values <- unique(df[[clmn]])
@@ -110,6 +100,22 @@ function(input, output, session) {
     textInput("malevalue", "Male value", v)
   })
 
+  output$livingdeadSelectUI <- renderUI({
+    selectInput("livingdeadVar",
+                "Living/dead variable",
+                c('All living', names(genealogyInput())))
+  })
+
+  output$livingInputUI <- renderUI({
+    v <- guess_value(input$livingdeadVar, c('alive', 'living', 'yes', '1'))
+    textInput("livingvalue", "Living value", v)
+  })
+
+  output$deadInputUI <- renderUI({
+    v <- guess_value(input$livingdeadVar, c('dead', 'deceased', 'no', '0'))
+    textInput("deadvalue", "Dead value", v)
+  })
+
   output$missingInputUI <- renderUI({
     df <- genealogyInput()
     egos <- df[[input$egoVar]]
@@ -125,6 +131,10 @@ function(input, output, session) {
     textInput("missingvalue", "Missing value", v)
   })
 
+  output$groupSelectUI <- renderUI({
+    selectInput("groupVar", "Group variable", names(genealogyInput()))
+  })
+
   errors <- eventReactive(input$checkErrors, {
     error_df(
       genealogyInput(),
@@ -134,6 +144,9 @@ function(input, output, session) {
       input$sexVar,
       input$malevalue,
       input$femalevalue,
+      input$livingdeadVar,
+      input$livingvalue,
+      input$deadvalue,
       input$missingvalue
     )
   })

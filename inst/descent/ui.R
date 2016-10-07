@@ -45,12 +45,12 @@ navbarPage(
                htmlOutput("motherSelectUI"),
                htmlOutput("fatherSelectUI"),
                htmlOutput("sexSelectUI"),
-               htmlOutput("livingdeadSelectUI"),
-
                htmlOutput("femaleInputUI"),
                htmlOutput("maleInputUI"),
+               htmlOutput("livingdeadSelectUI"),
+               htmlOutput("livingInputUI"),
+               htmlOutput("deadInputUI"),
                htmlOutput("missingInputUI")
-               # textInput("missingvalue", "Missing value", "999")
 
              ),
              mainPanel(DT::dataTableOutput('contents'))

@@ -10,6 +10,14 @@ check_sex_codes <- function(df, sex, male, female, missing){
   return(df)
 }
 
+check_livedead_codes <- function(df, livingdead, living, dead, missing){
+  if(livingdead == 'All living')
+    df$`Extraneous living-dead codes` <- FALSE
+  else
+    df$`Extraneous living-dead codes` <- ! (df[[livingdead]] %in% c(living, dead, missing))
+  return(df)
+}
+
 missing_egos <- function(df, ego, missing) {
   if (is.na(missing) | sum(is.na(df[[ego]])) > 0) {
     df$`Missing egos` <- is.na(df[[ego]])
@@ -67,6 +75,9 @@ error_df <-
            sex,
            male,
            female,
+           livingdead,
+           living,
+           dead,
            missing) {
 
     df <- check_sex_codes(df, sex, male, female, missing)
@@ -77,11 +88,13 @@ error_df <-
     df <-
       parent_wrong_sex(df, ego, father, mother, sex, male, female)
     df <- missing_parent(df, father, mother, missing)
+    df <- check_livedead_codes(df, livingdead, living, dead, missing)
 
     df <-
       df %>%
       filter(
         `Extraneous sex codes` |
+        `Extraneous living-dead codes` |
         `Missing egos` |
         `Duplicate egos` |
         `Ego equals parent` |
@@ -96,6 +109,7 @@ error_df <-
 
     error_cols <- c(
       'Extraneous sex codes',
+      'Extraneous living-dead codes',
       'Missing egos',
       'Duplicate egos',
       'Ego equals parent',
