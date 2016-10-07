@@ -32,7 +32,8 @@ function(input, output, session) {
     read_delim(
       inFile$datapath,
       delim = input$sep,
-      quote = '', #input$quote,
+      quote = '',
+      #input$quote,
       col_names = input$header
     )
 
@@ -107,12 +108,14 @@ function(input, output, session) {
   })
 
   output$livingInputUI <- renderUI({
-    v <- guess_value(input$livingdeadVar, c('alive', 'living', 'yes', '1'))
+    v <-
+      guess_value(input$livingdeadVar, c('alive', 'living', 'yes', '1'))
     textInput("livingvalue", "Living value", v)
   })
 
   output$deadInputUI <- renderUI({
-    v <- guess_value(input$livingdeadVar, c('dead', 'deceased', 'no', '0'))
+    v <-
+      guess_value(input$livingdeadVar, c('dead', 'deceased', 'no', '0'))
     textInput("deadvalue", "Dead value", v)
   })
 
@@ -164,23 +167,59 @@ function(input, output, session) {
     )
   })
 
-  output$error_msg <- renderText(if (is.null(errors())) 'No errors' else 'Rows with errors')
+  output$error_msg <-
+    renderText(if (is.null(errors()))
+      'No errors'
+      else
+        'Rows with errors')
 
   output$errors <- DT::renderDataTable(errors(),
-                          options = list(
-                            # scrollY = '75vh',
-                            scrollX = TRUE,
-                            paging = FALSE
-                          ))
+                                       options = list(# scrollY = '75vh',
+                                         scrollX = TRUE,
+                                         paging = FALSE))
 
-  output$warning_msg <- renderText(if (is.null(warnings())) 'No warnings' else 'Rows with warnings')
+  output$warning_msg <-
+    renderText(if (is.null(warnings()))
+      'No warnings'
+      else
+        'Rows with warnings')
 
   output$warnings <- DT::renderDataTable(warnings(),
-                                       options = list(
-                                         # scrollY = '75vh',
-                                         scrollX = TRUE,
-                                         paging = FALSE
-                                       ))
+                                         options = list(# scrollY = '75vh',
+                                           scrollX = TRUE,
+                                           paging = FALSE))
+
+  summary <- eventReactive(input$computeSummary, {
+    summary_stats(
+      genealogyInput(),
+      input$egoVar,
+      input$fatherVar,
+      input$motherVar,
+      input$sexVar,
+      input$malevalue,
+      input$femalevalue,
+      input$livingdeadVar,
+      input$living,
+      input$dead,
+      input$missingvalue
+    )
+  })
+
+  output$summaryStats <- renderText({
+    stats <- summary()$stats
+    txt <-
+      mapply(function(x, i)
+        paste(i, x, sep = ': '), stats, names(stats))
+    paste0('\n', txt)
+  })
+
+  output$kindepth <- renderPlot({
+    kd <- summary()$kd
+    x <- table(kd$depth)
+    dotchart(c(rev(x)),
+             main = 'Number of individuals in each generation (0 = founders)',
+             xlab = 'Number of individuals')
+  })
 
 
   # GENLIB phi doesn't return complete matrix for some reason
@@ -210,7 +249,8 @@ function(input, output, session) {
       input$femalevalue,
       input$missingvalue
     )
-    if (is.null(ped)) return(NULL)
+    if (is.null(ped))
+      return(NULL)
     kinship2::kinship(ped) * 2
   })
 
@@ -268,7 +308,8 @@ function(input, output, session) {
 
   output$groupStatsPlot <- renderPlot({
     df <- grouprelatedness()
-    if (is.null(df)) return(NULL)
+    if (is.null(df))
+      return(NULL)
     ggplot(df, aes(`Group size`, `Mean relatedness`)) +
       geom_point() +
       geom_text_repel(aes(label = `Group id`))
@@ -279,7 +320,9 @@ function(input, output, session) {
       'group_relatedness.csv'
     },
     content = function(file) {
-      write.table(grouprelatedness(), file, sep = ',',
+      write.table(grouprelatedness(),
+                  file,
+                  sep = ',',
                   row.names = FALSE)
     }
   )

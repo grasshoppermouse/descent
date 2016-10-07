@@ -1,22 +1,26 @@
 
+
 library(kinship2)
 library(GENLIB)
 library(dplyr)
 
 # Error checks
 
-check_sex_codes <- function(df, sex, male, female, missing){
-  df$`Extraneous sex codes` <- ! (df[[sex]] %in% c(male, female, missing))
+check_sex_codes <- function(df, sex, male, female, missing) {
+  df$`Extraneous sex codes` <-
+    !(df[[sex]] %in% c(male, female, missing))
   return(df)
 }
 
-check_livedead_codes <- function(df, livingdead, living, dead, missing){
-  if(livingdead == 'All living')
-    df$`Extraneous living-dead codes` <- FALSE
-  else
-    df$`Extraneous living-dead codes` <- ! (df[[livingdead]] %in% c(living, dead, missing))
-  return(df)
-}
+check_livedead_codes <-
+  function(df, livingdead, living, dead, missing) {
+    if (livingdead == 'All living')
+      df$`Extraneous living-dead codes` <- FALSE
+    else
+      df$`Extraneous living-dead codes` <-
+        !(df[[livingdead]] %in% c(living, dead, missing))
+    return(df)
+  }
 
 missing_egos <- function(df, ego, missing) {
   if (is.na(missing) | sum(is.na(df[[ego]])) > 0) {
@@ -35,15 +39,17 @@ duplicated_egos <- function(df, ego) {
   return(df)
 }
 
-ego_equals_parent <- function(df, ego, father, mother){
-  df$`Ego equals parent` <- df[[ego]] == df[[father]] | df[[ego]] == df[[mother]]
+ego_equals_parent <- function(df, ego, father, mother) {
+  df$`Ego equals parent` <-
+    df[[ego]] == df[[father]] | df[[ego]] == df[[mother]]
   return(df)
 }
 
-father_equals_mother <- function(df, father, mother, missing){
+father_equals_mother <- function(df, father, mother, missing) {
   both <- intersect(df[[father]], df[[mother]])
   both <- setdiff(both, missing)
-  df$`Father equals mother` <- df[[father]] %in% both | df[[mother]] %in% both
+  df$`Father equals mother` <-
+    df[[father]] %in% both | df[[mother]] %in% both
   return(df)
 }
 
@@ -79,7 +85,6 @@ error_df <-
            living,
            dead,
            missing) {
-
     df <- check_sex_codes(df, sex, male, female, missing)
     df <- missing_egos(df, ego, missing)
     df <- duplicated_egos(df, ego)
@@ -88,22 +93,24 @@ error_df <-
     df <-
       parent_wrong_sex(df, ego, father, mother, sex, male, female)
     df <- missing_parent(df, father, mother, missing)
-    df <- check_livedead_codes(df, livingdead, living, dead, missing)
+    df <-
+      check_livedead_codes(df, livingdead, living, dead, missing)
 
     df <-
       df %>%
       filter(
         `Extraneous sex codes` |
-        `Extraneous living-dead codes` |
-        `Missing egos` |
-        `Duplicate egos` |
-        `Ego equals parent` |
-        `Father equals mother` |
-        `Female father` |
-        `Male mother` |
-        `One missing parent`)
+          `Extraneous living-dead codes` |
+          `Missing egos` |
+          `Duplicate egos` |
+          `Ego equals parent` |
+          `Father equals mother` |
+          `Female father` |
+          `Male mother` |
+          `One missing parent`
+      )
 
-    if (nrow(df) == 0){
+    if (nrow(df) == 0) {
       return(NULL)
     }
 
@@ -117,7 +124,7 @@ error_df <-
       'Female father',
       'Male mother',
       'One missing parent'
-      )
+    )
 
     other_cols <- setdiff(names(df), error_cols)
     keep_cols <-
@@ -139,7 +146,7 @@ incest <-
            missing) {
     fm <-
       cbind(df[[father]], df[[mother]])[df[[father]] != missing &
-                                          df[[mother]] != missing,]
+                                          df[[mother]] != missing, ]
     fathers_mothers <- unique(t(split(fm, seq_len(nrow(
       fm
     )))))
@@ -202,7 +209,8 @@ incest <-
       return(FALSE)
     }
 
-    df$`Sibling incest` <- apply(cbind(df[[father]], df[[mother]]), 1, same_mom_or_dad)
+    df$`Sibling incest` <-
+      apply(cbind(df[[father]], df[[mother]]), 1, same_mom_or_dad)
     return(df)
   }
 
@@ -218,9 +226,11 @@ warning_df <-
     df <- incest(df, ego, father, mother, sex, male, female, missing)
     df <-
       df %>%
-      dplyr::filter((`Mother-son incest` |
-                       `Father-daughter incest` |
-                       `Sibling incest`))
+      dplyr::filter((
+        `Mother-son incest` |
+          `Father-daughter incest` |
+          `Sibling incest`
+      ))
 
     if (nrow(df) == 0)
       return(NULL)
@@ -236,6 +246,50 @@ warning_df <-
     return(df[keep_cols])
 
   }
+
+summary_stats <- function(df,
+                    ego,
+                    father,
+                    mother,
+                    sex,
+                    male,
+                    female,
+                    livingdead,
+                    living,
+                    dead,
+                    missing) {
+
+  df <- complete_pedigree(df,
+                          ego,
+                          father,
+                          mother,
+                          sex,
+                          male,
+                          female,
+                          missing)
+
+  ped <- as.pedigree.K2(df, ego, father, mother, sex, male, female, missing)
+
+  kd <- data_frame(
+    id = ped$id,
+    depth = kindepth(ped)
+  )
+
+  stats <- list(Note = "Parents who are not also egos have been added as egos with missing parents\n")
+  stats$`Number of egos` <- nrow(df)
+  stats$`Number of males` <- sum(df[[sex]] == male)
+  stats$`Number of females` <- sum(df[[sex]] == female)
+  stats$`Number of founders` <- sum(kd$depth == 0)
+  stats$`Number of generations` <- max(kd$depth) + 1
+
+
+  return(
+    list(
+      stats = stats,
+      kd = kd
+    )
+    )
+}
 
 complete_pedigree <-
   function(df,
@@ -282,16 +336,15 @@ as.pedigree.K2 <-
            male,
            female,
            missing) {
-
     # takes a data frame and returns a kinship2 pedigree
     #
     # is sex is not in "male", "female", "m", "f", "1", "2", then
     # it is converted to "male", "female"
 
     df_err <-
-      error_df(df, ego, mother, father, sex, female, male, missing)
+      error_df(df, ego, mother, father, sex, female, male, livingdead, living, dead, missing)
 
-    if (! is.null(df_err)) {
+    if (!is.null(df_err)) {
       return(NULL)
     }
 
@@ -327,7 +380,7 @@ as.pedigree.GL <-
 
     # Don't process df if it has errors
     e_df <-
-      error_df(df, ego, mother, father, sex, female, male, missing)
+      error_df(df, ego, mother, father, sex, female, male, livingdead, living, dead, missing)
     if (is.data.frame(e_df) && nrow(e_df) != 0) {
       return(NULL)
     }
@@ -389,7 +442,6 @@ mean_group_relatedness <-
            female,
            missing,
            group) {
-
     ped <- as.pedigree.K2(df,
                           ego,
                           father,
@@ -399,7 +451,8 @@ mean_group_relatedness <-
                           female,
                           missing)
 
-    if (is.null(ped)) return(NULL)
+    if (is.null(ped))
+      return(NULL)
 
     kinmat <- kinship(ped) * 2
 

@@ -66,6 +66,15 @@ navbarPage(
     )
   ),
   tabPanel(
+    "Summary",
+    verticalLayout(
+      actionButton('computeSummary', 'Summary stats'),
+      tags$br(),
+      verbatimTextOutput("summaryStats"),
+      plotOutput("kindepth")
+    )
+  ),
+  tabPanel(
     "Relatedness",
     verticalLayout(
       # DT::dataTableOutput('phi'),
