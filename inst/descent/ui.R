@@ -1,5 +1,6 @@
 
 library(shiny)
+require(rmarkdown)
 
 navbarPage(
   title = div(img(src = "descentlogo.gif")),

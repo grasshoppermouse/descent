@@ -138,32 +138,32 @@ function(input, output, session) {
     selectInput("groupVar", "Group variable", names(genealogyInput()))
   })
 
+  gen_params <- reactive({
+    list(
+      ego = input$egoVar,
+      father = input$fatherVar,
+      mother = input$motherVar,
+      sex = input$sexVar,
+      male = input$malevalue,
+      female = input$femalevalue,
+      livingdead = input$livingdeadVar,
+      living = input$livingvalue,
+      dead = input$deadvalue,
+      missing = input$missingvalue
+    )
+  })
+
   errors <- eventReactive(input$checkErrors, {
     error_df(
       genealogyInput(),
-      input$egoVar,
-      input$fatherVar,
-      input$motherVar,
-      input$sexVar,
-      input$malevalue,
-      input$femalevalue,
-      input$livingdeadVar,
-      input$livingvalue,
-      input$deadvalue,
-      input$missingvalue
+      gen_params()
     )
   })
 
   warnings <- eventReactive(input$checkErrors, {
     warning_df(
       genealogyInput(),
-      input$egoVar,
-      input$fatherVar,
-      input$motherVar,
-      input$sexVar,
-      input$malevalue,
-      input$femalevalue,
-      input$missingvalue
+      gen_params()
     )
   })
 
@@ -192,16 +192,7 @@ function(input, output, session) {
   summary <- eventReactive(input$computeSummary, {
     summary_stats(
       genealogyInput(),
-      input$egoVar,
-      input$fatherVar,
-      input$motherVar,
-      input$sexVar,
-      input$malevalue,
-      input$femalevalue,
-      input$livingdeadVar,
-      input$living,
-      input$dead,
-      input$missingvalue
+      gen_params()
     )
   })
 
@@ -241,13 +232,7 @@ function(input, output, session) {
   phi <- eventReactive(input$computePhi, {
     ped <- as.pedigree.K2(
       genealogyInput(),
-      input$egoVar,
-      input$fatherVar,
-      input$motherVar,
-      input$sexVar,
-      input$malevalue,
-      input$femalevalue,
-      input$missingvalue
+      gen_params()
     )
     if (is.null(ped))
       return(NULL)
@@ -285,13 +270,7 @@ function(input, output, session) {
   grouprelatedness <- eventReactive(input$groupStats, {
     mean_group_relatedness(
       genealogyInput(),
-      input$egoVar,
-      input$fatherVar,
-      input$motherVar,
-      input$sexVar,
-      input$malevalue,
-      input$femalevalue,
-      input$missingvalue,
+      gen_params(),
       input$groupVar
     )
   })
