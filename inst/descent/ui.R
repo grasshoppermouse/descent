@@ -85,11 +85,15 @@ navbarPage(
   ),
   tabPanel(
     "Groups",
-    sidebarPanel(
-      htmlOutput("groupSelectUI"),
-      actionButton('groupStats', 'Group relatedness'),
-      downloadButton('downloadGroupData', 'Download csv')),
-    mainPanel(
+    verticalLayout(
+      wellPanel(
+        fluidRow(
+        column(6, htmlOutput("groupSelectUI")),
+        column(3, actionButton('groupStats', 'Group relatedness')),
+        column(3, downloadButton('downloadGroupData', 'Download csv')),
+        tags$style(type='text/css', "#groupStats { width:100%; margin-top: 25px;}"),
+        tags$style(type='text/css', "#downloadGroupData { width:100%; margin-top: 25px;}")
+        )),
       # DT::dataTableOutput('groupStatsTable')
       plotOutput('groupStatsPlot')
       )
