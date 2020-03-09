@@ -1,9 +1,12 @@
 
+
+
 library(shiny)
 require(rmarkdown)
 
 navbarPage(
   title = div(img(src = "descentlogo.gif")),
+  id = 'tabs',
   windowTitle = 'Descent',
   tabPanel("File",
            sidebarLayout(
@@ -31,35 +34,29 @@ navbarPage(
                             ),
                             ','),
 
-               # radioButtons(
-               #   'quote',
-               #   'Quote',
-               #   c(
-               #     None = '',
-               #     'Double Quote' = '"',
-               #     'Single Quote' = "'"
-               #   ),
-               #   '"'
-               # ),
-
                htmlOutput("egoSelectUI"),
                htmlOutput("motherSelectUI"),
                htmlOutput("fatherSelectUI"),
                htmlOutput("sexSelectUI"),
                htmlOutput("femaleInputUI"),
                htmlOutput("maleInputUI"),
+               htmlOutput("missingInputUI"),
                htmlOutput("livingdeadSelectUI"),
                htmlOutput("livingInputUI"),
-               htmlOutput("deadInputUI"),
-               htmlOutput("missingInputUI")
+               htmlOutput("deadInputUI")
 
              ),
-             mainPanel(DT::dataTableOutput('contents'))
+             mainPanel(
+               conditionalPanel(
+                 condition = 'input.egoVar',
+                 downloadButton('downloadGENLIB', 'Download GENLIB format file')
+               ),
+               DT::dataTableOutput('contents')
+             )
            )),
   tabPanel(
     "Errors",
     verticalLayout(
-      actionButton('checkErrors', 'Check errors'),
       h3(textOutput('error_msg')),
       DT::dataTableOutput('errors'),
       h3(textOutput('warning_msg')),
@@ -69,48 +66,99 @@ navbarPage(
   tabPanel(
     "Summary",
     verticalLayout(
-      actionButton('computeSummary', 'Summary stats'),
+      # actionButton('computeSummary', 'Summary stats'),
       tags$br(),
       verbatimTextOutput("summaryStats"),
       plotOutput("kindepth")
     )
   ),
-  tabPanel(
-    "Relatedness",
-    verticalLayout(
-      # DT::dataTableOutput('phi'),
-      wellPanel(actionButton('computePhi', 'Compute relatedness'),
-                downloadButton('downloadRelatednessMatrix', 'Download matrix')),
-      plotOutput('phiHist')
-    )
-  ),
-  tabPanel(
-    "Groups",
-    verticalLayout(
-      wellPanel(
-        fluidRow(
-        column(6, htmlOutput("groupSelectUI")),
-        column(3, actionButton('groupStats', 'Group relatedness')),
-        column(3, downloadButton('downloadGroupData', 'Download csv')),
-        tags$style(type='text/css', "#groupStats { width:100%; margin-top: 25px;}"),
-        tags$style(type='text/css', "#downloadGroupData { width:100%; margin-top: 25px;}")
-        )),
-      # DT::dataTableOutput('groupStatsTable')
-      plotOutput('groupStatsPlot')
+  navbarMenu(
+    'Kin',
+    tabPanel(
+      "Kinship coefficients",
+      verticalLayout(
+        # actionButton('computePhi', 'Compute kinship'),
+        conditionalPanel(
+          condition = 'output.phiHist',
+          br(),
+          downloadButton('downloadKinshipMatrix', 'Download kinship matrix'),
+          downloadButton('downloadRelatednessMatrix', 'Download relatedness matrix'),
+          br(),
+          hr()
+        ),
+        plotOutput('phiHist')
       )
+    ),
+    tabPanel(
+      "Inbreeding coefficients",
+      verticalLayout(
+        wellPanel(
+          # actionButton('computeInbreeding', 'Compute inbreeding'),
+          downloadButton('downloadInbreeding', 'Download inbreeding coefficients')
+        ),
+        plotOutput('inbreedingHist'),
+        # h3('Egos with positive coefficients'),
+        DT::dataTableOutput('inbreeding')
+      )
+    ),
+    tabPanel("Mean group kinship",
+             verticalLayout(
+               wellPanel(
+                 fluidRow(
+                   column(6, htmlOutput("groupSelectUI")),
+                   column(3, actionButton('groupStats', 'Group kinship')),
+                   column(3, downloadButton('downloadGroupData', 'Download csv')),
+                   tags$style(type = 'text/css', "#groupStats { width:100%; margin-top: 25px;}"),
+                   tags$style(type = 'text/css', "#downloadGroupData { width:100%; margin-top: 25px;}")
+                 ),
+                 checkboxInput('nosingles', 'Omit groups with one person', T)
+               ),
+               # DT::dataTableOutput('groupStatsTable')
+               plotOutput('groupStatsPlot')
+             )),
+    tabPanel("Lineages",
+             plotOutput('lineageDistribution'))
   ),
-  tabPanel(
-    "Help",
-    # includeHTML("help/index.html")
-    includeMarkdown("www/help.md")
-  ),
+  navbarMenu('Pedigree',
+             tabPanel("Egos",
+                      verticalLayout(
+                        wellPanel(fluidRow(
+                          column(4, htmlOutput("egoIdSelectUI")),
+                          # column(6, actionButton('plotPedigree', 'Plot ego pedigree')),
+                          tags$style(type = 'text/css', "#plotEgoPedigree { width:100%; margin-top: 25px;}")
+                        )),
+                        plotOutput('egoPedigreePlot')
+                      )),
+             tabPanel("Matrilineages",
+                      verticalLayout(
+                        wellPanel(fluidRow(
+                          column(4, htmlOutput("matrilineageIdSelectUI")),
+                          # column(6, actionButton('plotMatPedigree', 'Plot matrilineage pedigree')),
+                          tags$style(type = 'text/css', "#plotMatPedigree { width:100%; margin-top: 25px;}")
+                        )),
+                        plotOutput('matrilineagePedigreePlot')
+                      )),
+             tabPanel("Patrilineages",
+                      verticalLayout(
+                        wellPanel(fluidRow(
+                          column(4, htmlOutput("patrilineageIdSelectUI")),
+                          # column(6, actionButton('plotPatPedigree', 'Plot patrilineage pedigree')),
+                          tags$style(type = 'text/css', "#plotPatPedigree { width:100%; margin-top: 25px;}")
+                        )),
+                        plotOutput('patrilineagePedigreePlot')
+                      ))
+             ),
+  tabPanel("Help",
+           # includeHTML("help/index.html")
+           includeMarkdown("www/help.md")),
   tabPanel(
     tags$button(
       id = 'quit',
       type = "button",
       class = "btn action-button",
       style = "color: #fff; background-color: #337ab7; border-color: #2e6da4; padding:2px",
-      onclick = "setTimeout(function(){window.close();},500);",  # close browser
+      onclick = "setTimeout(function(){window.close();},500);",
+      # close browser
       "Quit"
     )
   )
