@@ -258,6 +258,8 @@ summary_stats <- function(df, gen_params) {
   stats$`Number of egos` <- gen.noind(ped)
   stats$`Number of males` <- gen.nomen(ped)
   stats$`Number of females` <- gen.nowomen(ped)
+  stats$`Number of mothers` <- length(unique(df[[gen_params$mother]]))
+  stats$`Number of fathers` <- length(unique(df[[gen_params$father]]))
   stats$`Number of founders` <- length(gen.founder(ped))
   stats$`Number of generations` <- gen.depth(ped)
 
