@@ -49,7 +49,9 @@ navbarPage(
              mainPanel(
                conditionalPanel(
                  condition = 'input.egoVar',
-                 downloadButton('downloadGENLIB', 'Download GENLIB format file')
+                 downloadButton('downloadGENLIB', 'Download GENLIB format file'),
+                 downloadButton('downloadOriginal', 'Download augmented original file'),
+                 tags$hr()
                ),
                DT::dataTableOutput('contents')
              )

@@ -21,13 +21,13 @@ You do not need to use these specific column names, nor do they need to be in th
 
 Each member of the population must be assigned a unique Ego ID. Ego's biological father and mother are identified with their unique ID codes, or by a 'Missing' code if their identities are unknown (see below). Ego's sex must also be specified. An optional fifth field, LIVING, denoting whether EGO is alive or dead, can be included. The first line of the file can optionally contain column header labels (e.g., EGO, FATHER, etc.). Thus, the first four lines of a typical input file might look like this:
 
-EGO      | FATHER   | MOTHER     | SEX  | LIVING
+EGO            | FATHER      | MOTHER          | SEX    | LIVING
 -------------- | ----------- | --------------- | ------ | ------
-Kennedy John  | Kennedy Joe | Fitzgerald Rose | male  | No
-Kennedy Robert | Kennedy Joe | Fitzgerald Rose | male  | No
+Kennedy John   | Kennedy Joe | Fitzgerald Rose | male   | No
+Kennedy Robert | Kennedy Joe | Fitzgerald Rose | male   | No
 Kennedy Eunice | Kennedy Joe | Fitzgerald Rose | female | Yes
 
-The underlying [GENLIB](https://CRAN.R-project.org/package=GENLIB) package requires numeric id codes. If you use non-numeric ids, <font color=#ff3333>D<small>ESCENT</small></font> will convert them to numeric under the hood, but usually display your id codes rather than the converted codes. The only place where this is not possible is the pedigree plots, which currently only display numeric codes. To avoid this and other possible conflicts with the GENLIB package, use numeric id codes. <font color=#ff3333>D<small>ESCENT</small></font> can export a file with all id codes and column headers and values converted to GENLIB format.
+The underlying [GENLIB](https://CRAN.R-project.org/package=GENLIB) package requires numeric id codes. If you use non-numeric ids, <font color=#ff3333>D<small>ESCENT</small></font> will convert them to numeric under the hood, but will usually display your id codes rather than the converted codes. The only place where this is not possible is the pedigree plots, which currently only display numeric codes. To avoid possible conflicts with the GENLIB package, use numeric id codes. <font color=#ff3333>D<small>ESCENT</small></font> can export a file with all id codes and column headers and values converted to GENLIB format.
 
 <!-- average coefficient of relatedness of each member to the entire population, average coefficient of relatedness of each member to their consanguineal kin, number of kin of each population member, patri- and matrilineages, consanguineal connections between members of the population, and number of kin in particular categories (e.g., sisters) for each member of the population -->
 
@@ -47,7 +47,7 @@ Displays basic information about the genealogy, including numbers of egos, males
 
 ## Kin
 
-Computes matrix of coefficients of kinship, coefficients of relation, inbreeding coefficients, and plots distributions of the sizes of matrilineages and patrilineages.
+Computes matrix of coefficients of kinship, coefficients of relationship, inbreeding coefficients, and plots distributions of the sizes of matrilineages and patrilineages.
 
 ## Pedigree
 

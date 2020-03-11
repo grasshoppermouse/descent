@@ -15,16 +15,12 @@ function(input, output) {
   showmenus <- function(){
     showTab(inputId = "tabs", target = "Summary")
     showTab(inputId = "tabs", target = "Kin")
-    # showTab(inputId = "tabs", target = "Inbreeding")
-    # showTab(inputId = "tabs", target = "Groups")
     showTab(inputId = "tabs", target = "Pedigree")
   }
 
   hidemenus <- function(){
     hideTab(inputId = "tabs", target = "Summary")
     hideTab(inputId = "tabs", target = "Kin")
-    # hideTab(inputId = "tabs", target = "Inbreeding")
-    # hideTab(inputId = "tabs", target = "Groups")
     hideTab(inputId = "tabs", target = "Pedigree")
   }
 
@@ -228,6 +224,15 @@ function(input, output) {
     },
     content = function(file) {
       write_ped(genealogyInput(), gen_params(), path=file)
+    }
+  )
+
+  output$downloadOriginal <- downloadHandler(
+    filename = function() {
+      'augmented_original.csv'
+    },
+    content = function(filename) {
+      readr::write_tsv(genealogyInput(), path=filename)
     }
   )
 

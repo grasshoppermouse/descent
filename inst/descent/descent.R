@@ -1,4 +1,6 @@
 
+# Other packages to explore
+# https://cran.r-project.org/web/packages/ggenealogy/
 
 # Cejal gen_params, for testing
 gen_params <- list(ego = 'Ego', father = 'Father', mother = 'Mother', sex = 'Sex', missing = '999', male = 'm', female = 'f', livingdead = 'All living', living = '', dead = '')
@@ -292,7 +294,7 @@ complete_pedigree <- function(df, gen_params) {
   new_females <-
     setdiff(df[[gen_params$mother]], c(df[[gen_params$ego]], miss))
 
-  if (!(length(new_males) | length(new_females))) {
+  if (length(new_males) == 0 & length(new_females) == 0) {
     return(df)
   }
 
@@ -312,9 +314,6 @@ complete_pedigree <- function(df, gen_params) {
       gen_params$mother,
       gen_params$sex)
 
-  # print(gen_params)
-  # print(str(df, give.attr=F))
-  # print(str(new_rows, give.attr=F))
   df <- bind_rows(df, new_rows)
   return(df)
 }
